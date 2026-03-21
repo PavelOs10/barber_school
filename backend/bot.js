@@ -12,7 +12,20 @@ export function startBot() {
     return;
   }
 
-  bot = new TelegramBot(token, { polling: true });
+  bot = new TelegramBot(token, {
+    polling: {
+      params: { timeout: 10 },
+      interval: 2000,
+    },
+    request: {
+      timeout: 15000,
+    },
+  });
+
+  bot.on('polling_error', (err) => {
+    console.error('🤖 Telegram polling error:', err.code || err.message);
+  });
+
   console.log('🤖 Telegram-бот запущен');
 
   // ── Auth middleware ──────────────────────────────────

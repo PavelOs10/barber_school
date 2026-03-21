@@ -62,8 +62,9 @@ app.post('/api/lead', async (req, res) => {
       'INSERT INTO leads (type, name, phone, message) VALUES (?, ?, ?, ?)'
     ).run(type || 'general', name, phone, message || '');
 
-    // Notify admin via Telegram
-    await notifyLead({ id: result.lastInsertRowid, type: type || 'general', name, phone, message });
+    // Notify admin via Telegram (non-blocking — don't wait)
+    notifyLead({ id: result.lastInsertRowid, type: type || 'general', name, phone, message })
+      .catch(err => console.error('TG notify failed:', err.message));
 
     // Auto-decrement spots if model day booking
     if (type === 'model' && req.body.modelDayId) {

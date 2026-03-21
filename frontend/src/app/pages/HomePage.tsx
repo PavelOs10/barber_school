@@ -42,6 +42,9 @@ const reviews = [
 ];
 
 export function HomePage() {
+  const { data: settings } = useSettings();
+  const waPhone = settings.whatsapp_phone || '79001234567';
+  const tgChannel = settings.telegram_channel || 'barberhouse_vrn';
   return (
     <div>
       <BarberHeroSection />

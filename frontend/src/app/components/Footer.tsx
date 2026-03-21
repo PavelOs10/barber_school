@@ -3,11 +3,15 @@ import { MapPin, Phone, Mail, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import logoImg from '@/assets/bf79a2c11bccd3308e961cbe03a60b3b3f1f2f07.png';
 import { BarberPoleDivider } from './BarberDecor';
+import { useSettings } from '../hooks/useAPI';
 
 const RED  = '#D42B2B';
 const BLUE = '#2255CC';
 
 export function Footer() {
+  const { data: settings } = useSettings();
+  const waPhone = settings.whatsapp_phone || '79001234567';
+  const tgChannel = settings.telegram_channel || 'barberhouse_vrn';
   return (
     <footer style={{ background: '#F8F7F5', borderTop: '1px solid #E8E6E3' }} className="pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

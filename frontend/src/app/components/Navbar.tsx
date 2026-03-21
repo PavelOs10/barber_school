@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import logoImg from '@/assets/bf79a2c11bccd3308e961cbe03a60b3b3f1f2f07.png';
 import { BarberPoleDivider } from './BarberDecor';
+import { useSettings } from '../hooks/useAPI';
 
 const RED  = '#D42B2B';
 const BLUE = '#2255CC';
@@ -24,6 +25,9 @@ export function Navbar() {
   const [open, setOpen]       = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location              = useLocation();
+  const { data: settings } = useSettings();
+  const waPhone = settings.whatsapp_phone || '79001234567';
+  const tgChannel = settings.telegram_channel || 'barberhouse_vrn';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);

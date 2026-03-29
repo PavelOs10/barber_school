@@ -30,7 +30,7 @@ export function Footer() {
             <div className="flex gap-2 mt-5 flex-wrap">
               {[
                 { label: 'ВК',     href: '#' },
-                { label: 'TG',     href: 'https://t.me/barberhouse_vrn' },
+                { label: 'TG',     href: `https://t.me/${tgChannel}` },
                 { label: 'YT',     href: '#' },
                 { label: 'TikTok', href: '#' },
               ].map(s => (
@@ -102,19 +102,19 @@ export function Footer() {
             <div className="flex flex-col gap-3">
               <div className="flex items-start gap-2">
                 <MapPin size={15} color={RED} className="mt-0.5 shrink-0" />
-                <span style={{ color: '#666', fontSize: '13px' }}>г. Воронеж, ул. Плехановская, 67</span>
+                <span style={{ color: '#666', fontSize: '13px' }}>{settings.address || 'г. Воронеж, ул. Плехановская, 67'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={15} color={RED} className="shrink-0" />
-                <a href="tel:+79001234567" style={{ color: '#666', fontSize: '13px' }}>+7 (900) 123-45-67</a>
+                <a href={`tel:${(settings.phone || '+7 (900) 123-45-67').replace(/[^\d+]/g, '')}`} style={{ color: '#666', fontSize: '13px' }}>{settings.phone || '+7 (900) 123-45-67'}</a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={15} color={RED} className="shrink-0" />
-                <a href="mailto:info@barberhouse.ru" style={{ color: '#666', fontSize: '13px' }}>info@barberhouse.ru</a>
+                <a href={`mailto:${settings.email || 'info@barberhouse.ru'}`} style={{ color: '#666', fontSize: '13px' }}>{settings.email || 'info@barberhouse.ru'}</a>
               </div>
               <div className="flex items-center gap-2">
                 <Send size={15} color={BLUE} className="shrink-0" />
-                <a href={`https://t.me/${tgChannel}`} style={{ color: '#666', fontSize: '13px' }}>@barberhouse_vrn</a>
+                <a href={`https://t.me/${tgChannel}`} style={{ color: '#666', fontSize: '13px' }}>@{tgChannel}</a>
               </div>
             </div>
           </div>

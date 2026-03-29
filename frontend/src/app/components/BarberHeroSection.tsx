@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { Link } from 'react-router';
 import { ArrowRight, MessageCircle, CheckCircle } from 'lucide-react';
 import logoImg from '@/assets/bf79a2c11bccd3308e961cbe03a60b3b3f1f2f07.png';
+import { useSettings } from '../hooks/useAPI';
 
 const RED = '#D42B2B';
 const BLUE = '#2255CC';
@@ -216,6 +217,8 @@ export function BarberHeroSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animFrameRef = useRef<number>(0);
+  const { data: settings } = useSettings();
+  const waPhone = settings.whatsapp_phone || '79001234567';
 
   /* Scroll parallax */
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -591,7 +594,7 @@ export function BarberHeroSection() {
 
             <motion.div whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }}>
               <a
-                href={`https://wa.me/79001234567?text=Хочу%20получить%20консультацию`}
+                href={`https://wa.me/${waPhone}?text=Хочу%20получить%20консультацию`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

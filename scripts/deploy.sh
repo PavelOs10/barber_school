@@ -35,7 +35,13 @@ fi
 
 echo "📦 Node.js: $(node -v)"
 
-# ── 3. Сборка фронтенда ────────────────────────────────
+# ── 3. Скачивание локальных ресурсов ──────────────────
+echo "📸 Скачивание шрифтов и изображений..."
+cd "$PROJECT_DIR"
+bash scripts/download-fonts.sh 2>/dev/null || echo "⚠️  Не удалось скачать шрифты (проверьте интернет)"
+bash scripts/download-images.sh 2>/dev/null || echo "⚠️  Не удалось скачать изображения (проверьте интернет)"
+
+# ── 4. Сборка фронтенда ────────────────────────────────
 echo "🔨 Сборка фронтенда..."
 cd "$FRONTEND_DIR"
 npm install --legacy-peer-deps
@@ -46,6 +52,12 @@ mkdir -p "$WEB_ROOT"
 rm -rf "${WEB_ROOT:?}/"*
 cp -r dist/* "$WEB_ROOT/"
 echo "✅ Фронтенд собран → $WEB_ROOT"
+
+# ── 3.5. Копируем админку ─────────────────────────────
+ADMIN_DIR="/var/www/barber/admin"
+mkdir -p "$ADMIN_DIR"
+cp -r "${PROJECT_DIR}/admin/"* "$ADMIN_DIR/"
+echo "✅ Админка скопирована → $ADMIN_DIR"
 
 # ── 4. Установка зависимостей бэкенда ──────────────────
 echo "📦 Установка зависимостей бэкенда..."

@@ -5,16 +5,25 @@
 ```
 barber-project/
 ├── frontend/          # React + Vite + Tailwind (фронтенд)
-├── backend/           # Node.js + Express + SQLite + Telegram Bot
+│   └── public/        # Локальные шрифты и изображения
+│       ├── fonts/     # Bebas Neue, Inter (скачать через скрипт)
+│       └── images/    # Фото (скачать через скрипт)
+├── backend/           # Node.js + Express + SQLite
 │   ├── server.js      # Точка входа
-│   ├── api.js         # REST API
-│   ├── bot.js         # Telegram-бот для управления
+│   ├── api.js         # Публичный REST API
+│   ├── admin-api.js   # Админ API (JWT-авторизация)
+│   ├── bot.js         # Telegram-бот (опциональный)
 │   ├── db.js          # SQLite база + сиды
 │   └── .env.example   # Шаблон переменных окружения
-├── nginx/             # Конфиг nginx (справочный)
+├── admin/             # Веб-админка (отдельный HTML)
+│   └── index.html     # SPA-панель управления
+├── nginx/             # Конфиг nginx
 ├── scripts/
-│   ├── setup-ssl.sh   # Установка SSL (Let's Encrypt)
-│   └── deploy.sh      # Полный деплой на VPS
+│   ├── deploy.sh          # Полный деплой на VPS
+│   ├── download-fonts.sh  # Скачивание шрифтов локально
+│   ├── download-images.sh # Скачивание Unsplash-фото локально
+│   ├── setup-ssl.sh       # Установка SSL (Let's Encrypt)
+│   └── finish-ssl.sh      # Завершение SSL
 └── README.md
 ```
 
@@ -24,9 +33,9 @@ barber-project/
 # 1. Бэкенд
 cd backend
 cp .env.example .env
-# Заполните BOT_TOKEN и ADMIN_CHAT_ID в .env
+# Заполните ADMIN_PASSWORD в .env
 npm install
-npm run dev
+node server.js
 
 # 2. Фронтенд (в другом терминале)
 cd frontend
@@ -34,14 +43,32 @@ npm install --legacy-peer-deps
 npm run dev
 ```
 
-Сайт откроется на http://localhost:5173, API на http://localhost:3100
+Сайт: http://localhost:5173 | API: http://localhost:3100 | Админка: http://localhost:5173/admin/
+
+## Веб-админка
+
+Доступна по адресу `https://ваш-домен.ru/admin/`
+
+### Возможности
+
+- **Дашборд** — статистика заявок (сегодня, за неделю, новые, всего)
+- **Заявки** — просмотр, фильтрация по статусу, смена статуса, удаление
+- **Расписание** — добавление, редактирование, удаление потоков, 🔥 и видимость
+- **Курсы** — полный CRUD (все поля: название, цена, места, уровень, длительность и т.д.)
+- **Дни моделей** — добавление, редактирование, удаление
+- **Акции** — добавление, редактирование, удаление (праздник, скидка, промокод, даты)
+- **Настройки** — телефон, email, адрес, часы работы, WhatsApp, Telegram
+
+### Авторизация
+
+Пароль задаётся в `.env` переменной `ADMIN_PASSWORD`. Токен действует 7 дней.
 
 ## Деплой на VPS
 
 ### Требования
 - Ubuntu 22+ / Debian 12+
-- Домен, направленный на IP сервера (A-запись в reg.ru)
-- На сервере уже есть сервис на порту 3000 (не конфликтует — наш API на 3100)
+- Домен, направленный на IP сервера
+- Node.js 20+
 
 ### Шаги
 
@@ -53,51 +80,50 @@ scp -r barber-project/ root@YOUR_SERVER_IP:/opt/
 ssh root@YOUR_SERVER_IP
 cp /opt/barber-project/backend/.env.example /opt/barber-project/backend/.env
 nano /opt/barber-project/backend/.env
-# → Вставьте BOT_TOKEN и ADMIN_CHAT_ID
+# → Заполните:
+#   ADMIN_PASSWORD=ваш_надёжный_пароль
+#   JWT_SECRET=сгенерируйте: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+#   BOT_TOKEN (опционально, если нужен Telegram-бот)
 
 # 3. Установите SSL
 cd /opt/barber-project/scripts
 bash setup-ssl.sh yourdomain.ru your@email.com
 
-# 4. Деплой
+# 4. Деплой (скачает шрифты, картинки, соберёт фронтенд, запустит бэкенд)
 bash deploy.sh
 ```
 
-## Telegram-бот — управление сайтом
+### Ручное обновление
 
-После настройки бота (@BotFather → /newbot) отправьте `/start` в чат с ботом.
+```bash
+cd /opt/barber-project
 
-### Основные команды
+# Скачать шрифты и картинки (если ещё не скачаны)
+bash scripts/download-fonts.sh
+bash scripts/download-images.sh
 
-| Команда | Описание |
-|---------|----------|
-| `/courses` | Список курсов |
-| `/schedule` | Расписание потоков |
-| `/models` | Дни для моделей |
-| `/promos` | Сезонные акции |
-| `/leads` | Новые заявки |
-| `/spots 1 5` | Изменить кол-во мест (поток #1 → 5 мест) |
-| `/spots_course 2 3` | Изменить места у курса |
-| `/spots_model 3 4` | Изменить места для моделей |
-| `/hot 1` | Вкл/выкл 🔥 у потока |
-| `/hide schedule 1` | Скрыть поток #1 |
-| `/show schedule 1` | Показать обратно |
-| `/add_schedule ...` | Добавить поток |
-| `/add_model ...` | Добавить день моделей |
-| `/add_promo ...` | Добавить акцию |
-| `/edit_schedule 1 price 50 000 ₽` | Редактировать поле |
-| `/settings` | Контакты и настройки |
-| `/set whatsapp_phone 79001234567` | Изменить настройку |
-| `/lead_status 5 contacted` | Сменить статус заявки |
-| `/delete schedule 3` | Удалить запись |
-| `/help` | Полная справка |
+# Пересобрать фронтенд
+cd frontend && npm run build && cp -r dist/* /var/www/barber/dist/
 
-### Уведомления о заявках
+# Обновить админку
+cp -r admin/* /var/www/barber/admin/
 
-При каждой заявке с сайта бот присылает уведомление с данными клиента и кнопкой для смены статуса.
+# Перезапустить бэкенд
+systemctl restart barber-api
+```
+
+## Решение проблем
+
+### Картинки не загружаются
+Причина: Unsplash и Google Fonts нестабильно работают из России.
+Решение: запустите `bash scripts/download-images.sh` и `bash scripts/download-fonts.sh`, затем пересоберите фронтенд.
+
+### Telegram-бот не работает
+В России Telegram заблокирован на уровне серверов. Используйте веб-админку (`/admin/`) вместо бота.
 
 ## API эндпоинты
 
+### Публичные
 | Метод | Путь | Описание |
 |-------|------|----------|
 | GET | `/api/courses` | Список курсов |
@@ -108,8 +134,19 @@ bash deploy.sh
 | POST | `/api/lead` | Отправка заявки |
 | GET | `/api/health` | Проверка здоровья |
 
+### Админские (требуют Bearer-токен)
+| Метод | Путь | Описание |
+|-------|------|----------|
+| POST | `/api/admin/login` | Авторизация |
+| GET | `/api/admin/stats` | Статистика |
+| GET/PATCH/DELETE | `/api/admin/leads/:id` | Управление заявками |
+| GET/POST/PATCH/DELETE | `/api/admin/schedule/:id` | Расписание |
+| GET/POST/PATCH/DELETE | `/api/admin/courses/:id` | Курсы |
+| GET/POST/PATCH/DELETE | `/api/admin/model-days/:id` | Дни моделей |
+| GET/POST/PATCH/DELETE | `/api/admin/promos/:id` | Акции |
+| GET/PATCH | `/api/admin/settings` | Настройки |
+
 ## Порты
 
-- **3000** — ваша CRM (уже занят)
-- **3100** — Barber House API + Telegram Bot
-- **80/443** — Nginx (фронтенд + проксирование API)
+- **3100** — Barber House API
+- **80/443** — Nginx (фронтенд + проксирование API + админка)

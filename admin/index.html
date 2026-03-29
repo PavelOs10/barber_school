@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BARBER HOUSE — Админ-панель</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{--bg:#0A0A0B;--s:#141416;--s2:#1C1C1F;--b:#2A2A2E;--t:#E8E8EC;--t2:#8E8E96;--red:#D42B2B;--rs:rgba(212,43,43,.12);--grn:#22C55E;--gs:rgba(34,197,94,.12);--blu:#3B82F6;--bs:rgba(59,130,246,.12);--org:#F59E0B;--os:rgba(245,158,11,.12);--r:10px;--f:'Segoe UI',system-ui,-apple-system,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--f);background:var(--bg);color:var(--t);min-height:100vh;line-height:1.5}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:40px 32px;width:100%;max-width:380px;text-align:center}
+.login-box h1{font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:.04em}
+.login-box .sub{color:var(--t2);font-size:13px;margin-bottom:28px}
+.login-box input{width:100%;padding:12px 16px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:14px;outline:none}
+.login-box input:focus{border-color:var(--red)}
+.login-box .err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+.login-box button{width:100%;padding:12px;margin-top:16px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer}
+.login-box button:hover{opacity:.85}
+.app{display:none}.app.active{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--s);border-right:1px solid var(--b);padding:16px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s}
+.sh{padding:0 16px 16px;border-bottom:1px solid var(--b);margin-bottom:4px}
+.sh h2{font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--red)}
+.sh small{color:var(--t2);font-size:11px}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 16px;color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.ni:hover{color:var(--t);background:var(--s2)}
+.ni.active{color:var(--t);background:var(--s2);border-left-color:var(--red)}
+.ni .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+.sf{margin-top:auto;padding:12px 16px;border-top:1px solid var(--b)}
+.sf button{display:flex;align-items:center;gap:6px;color:var(--t2);font-size:13px;cursor:pointer;background:none;border:none;font-family:inherit;width:100%;padding:0}
+.sf button:hover{color:var(--red)}
+.main{flex:1;margin-left:230px;padding:20px 28px;max-width:1100px}
+.pt{font-size:20px;font-weight:700;margin-bottom:16px}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:14px 16px}
+.sc .l{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.sc .v{font-size:26px;font-weight:700}
+.sc .v.r{color:var(--red)}.sc .v.g{color:var(--grn)}.sc .v.b{color:var(--blu)}
+.fb{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:6px 12px;background:var(--s);border:1px solid var(--b);border-radius:20px;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.fbtn:hover{border-color:var(--t2);color:var(--t)}
+.fbtn.active{background:var(--rs);border-color:var(--red);color:var(--red)}
+.tw{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--b);white-space:nowrap}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--b);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--s2)}
+.ln{font-weight:600}.lp{color:var(--blu);font-weight:500}.lp a{color:inherit;text-decoration:none}.lp a:hover{text-decoration:underline}
+.lm{color:var(--t2);font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ld{color:var(--t2);font-size:12px;white-space:nowrap}
+.st{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.st:hover{opacity:.8}
+.st.new{background:var(--rs);color:var(--red)}.st.contacted{background:var(--os);color:var(--org)}.st.done{background:var(--gs);color:var(--grn)}.st.cancelled{background:var(--s2);color:var(--t2)}
+.tb{font-size:11px;color:var(--t2);background:var(--s2);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.acts{display:flex;gap:3px}
+.ab{padding:4px 7px;border-radius:6px;border:1px solid var(--b);background:transparent;color:var(--t2);cursor:pointer;font-size:12px;font-family:inherit}
+.ab:hover{background:var(--s2);color:var(--t);border-color:var(--t2)}
+.ab.dng:hover{background:var(--rs);color:var(--red);border-color:var(--red)}
+.sdd{position:fixed;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:4px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:100;min-width:150px}
+.sdd .opt{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--t);width:100%;font-family:inherit}
+.sdd .opt:hover{background:var(--s2)}
+.empty{text-align:center;padding:50px 20px;color:var(--t2)}
+.empty .icon{font-size:36px;margin-bottom:10px}.empty .msg{font-size:14px}
+.sechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.addb{padding:7px 14px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.addb:hover{opacity:.85}
+.mo{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mo.active{display:flex}
+.md{background:var(--s);border:1px solid var(--b);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--b)}
+.mh h3{font-size:15px;font-weight:700}
+.mc{background:none;border:none;color:var(--t2);font-size:20px;cursor:pointer;padding:4px;line-height:1}
+.mc:hover{color:var(--t)}
+.mb{padding:20px 22px}
+.f{margin-bottom:14px}
+.f label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.f input,.f select,.f textarea{width:100%;padding:9px 12px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t);font-size:13px;font-family:inherit;outline:none}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--red)}
+.f textarea{min-height:70px;resize:vertical}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mf{padding:14px 22px;border-top:1px solid var(--b);display:flex;justify-content:flex-end;gap:8px}
+.btnc{padding:9px 18px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.btns{padding:9px 22px;background:var(--red);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btns:hover{opacity:.85}
+.tc{position:fixed;top:16px;right:16px;z-index:300;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:10px 18px;font-size:13px;animation:si .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast.ok{border-left:3px solid var(--grn)}.toast.er{border-left:3px solid var(--red)}
+@keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.setc{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:22px}
+.setc .f{max-width:400px}
+.vt{width:36px;height:20px;border-radius:10px;cursor:pointer;border:none;position:relative}
+.vt.on{background:var(--grn)}.vt.off{background:var(--b)}
+.vt::after{content:'';width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;transition:left .2s}
+.vt.on::after{left:19px}.vt.off::after{left:3px}
+.hb{display:none;position:fixed;top:14px;left:14px;z-index:60;width:36px;height:36px;background:var(--s);border:1px solid var(--b);border-radius:8px;cursor:pointer;align-items:center;justify-content:center;font-size:18px;color:var(--t)}
+.so{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:45}
+@media(max-width:768px){.hb{display:flex}.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.so.open{display:block}.main{margin-left:0;padding:56px 14px 20px}.sg{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}table{font-size:12px}thead th,tbody td{padding:7px 8px}.lm{max-width:100px}}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="login-wrap" id="loginScreen">
+<div class="login-box"><h1>BARBER HOUSE</h1><div class="sub">Панель управления</div><input type="password" id="passInput" placeholder="Пароль" autocomplete="off"><div class="err" id="loginError"></div><button onclick="doLogin()">Войти</button></div>
+</div>
+<div class="app" id="app">
+<button class="hb" id="hamburger" onclick="toggleSidebar()">☰</button>
+<div class="so" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+<div class="sh"><h2>BARBER HOUSE</h2><small>Панель управления</small></div>
+<div class="ni active" data-page="dashboard" onclick="nav('dashboard')"><span>📊</span> Дашборд</div>
+<div class="ni" data-page="leads" onclick="nav('leads')"><span>📬</span> Заявки <span class="badge" id="nlb" style="display:none"></span></div>
+<div class="ni" data-page="schedule" onclick="nav('schedule')"><span>📅</span> Расписание</div>
+<div class="ni" data-page="courses" onclick="nav('courses')"><span>📚</span> Курсы</div>
+<div class="ni" data-page="models" onclick="nav('models')"><span>💇</span> Дни моделей</div>
+<div class="ni" data-page="promos" onclick="nav('promos')"><span>🎁</span> Акции</div>
+<div class="ni" data-page="settings" onclick="nav('settings')"><span>⚙️</span> Настройки</div>
+<div class="sf"><button onclick="logout()">🚪 Выйти</button></div>
+</aside>
+<main class="main" id="mc"></main>
+</div>
+<div class="tc" id="toasts"></div>
+<div class="mo" id="moOv" onclick="if(event.target===this)closeModal()"><div class="md" id="modal"></div></div>
+<script>
+const API='/api/admin';let token=localStorage.getItem('at')||'',cp='dashboard',lf='all',sdd=null;
+async function api(m,p,b){const o={method:m,headers:{'Content-Type':'application/json'}};if(token)o.headers['Authorization']='Bearer '+token;if(b)o.body=JSON.stringify(b);const r=await fetch(API+p,o);if(r.status===401){logout();throw new Error('Unauthorized')}return r.json()}
+async function doLogin(){const p=document.getElementById('passInput').value;if(!p)return;try{const d=await api('POST','/login',{password:p});if(d.token){token=d.token;localStorage.setItem('at',token);showApp()}else{document.getElementById('loginError').textContent=d.error||'Ошибка'}}catch{document.getElementById('loginError').textContent='Неверный пароль'}}
+document.getElementById('passInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+function logout(){token='';localStorage.removeItem('at');document.getElementById('loginScreen').style.display='';document.getElementById('app').classList.remove('active')}
+async function checkAuth(){if(!token)return false;try{return(await api('GET','/check')).ok}catch{return false}}
+async function init(){if(await checkAuth())showApp()}
+function showApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').classList.add('active');nav('dashboard')}
+function nav(p){cp=p;document.querySelectorAll('.ni').forEach(n=>n.classList.toggle('active',n.dataset.page===p));closeSidebar();render()}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open')}
+function toast(m,t='ok'){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;document.getElementById('toasts').appendChild(e);setTimeout(()=>e.remove(),3000)}
+function openModal(h){document.getElementById('modal').innerHTML=h;document.getElementById('moOv').classList.add('active')}
+function closeModal(){document.getElementById('moOv').classList.remove('active')}
+function render(){({dashboard:rDash,leads:rLeads,schedule:rSched,courses:rCourses,models:rModels,promos:rPromos,settings:rSettings}[cp]||rDash)()}
+function esc(s){if(s==null)return'';const d=document.createElement('div');d.textContent=String(s);return d.innerHTML}
+function fmtDate(dt){if(!dt)return'—';try{const d=new Date(dt+(dt.includes('T')?'':'T00:00:00'));return d.toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch{return dt}}
+function ubadge(c){const b=document.getElementById('nlb');if(c>0){b.style.display='';b.textContent=c}else b.style.display='none'}
+
+// ── DASHBOARD ──
+async function rDash(){const mc=document.getElementById('mc');mc.innerHTML='<div class="pt">Дашборд</div><div class="sg" id="sg">Загрузка...</div>';try{const s=await api('GET','/stats');document.getElementById('sg').innerHTML=`<div class="sc"><div class="l">Новые заявки</div><div class="v r">${s.leadsNew}</div></div><div class="sc"><div class="l">Сегодня</div><div class="v">${s.leadsToday}</div></div><div class="sc"><div class="l">За неделю</div><div class="v b">${s.leadsWeek}</div></div><div class="sc"><div class="l">Всего</div><div class="v">${s.leadsTotal}</div></div><div class="sc"><div class="l">Курсов</div><div class="v g">${s.coursesActive}</div></div><div class="sc"><div class="l">Потоков</div><div class="v">${s.scheduleActive}</div></div>`;ubadge(s.leadsNew)}catch{mc.innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка загрузки</div></div>'}}
+
+// ── LEADS ──
+async function rLeads(){const mc=document.getElementById('mc');mc.innerHTML='<div class="pt">Заявки</div><div id="lc">Загрузка...</div>';try{const d=await api('GET','/leads?status='+lf);const{leads,counts}=d;ubadge(counts.new);const tl={popup:'🔔 Попап',contact:'📨 Контакты',model:'💇 Модель',general:'📩 Общая'};const sl={new:'🆕 Новая',contacted:'📞 Связались',done:'✅ Завершена',cancelled:'❌ Отменена'};let h=`<div class="fb"><button class="fbtn ${lf==='all'?'active':''}" onclick="lf='all';rLeads()">Все <span style="opacity:.7">${counts.all}</span></button><button class="fbtn ${lf==='new'?'active':''}" onclick="lf='new';rLeads()">🆕 Новые <span style="opacity:.7">${counts.new}</span></button><button class="fbtn ${lf==='contacted'?'active':''}" onclick="lf='contacted';rLeads()">📞 Связались <span style="opacity:.7">${counts.contacted}</span></button><button class="fbtn ${lf==='done'?'active':''}" onclick="lf='done';rLeads()">✅ Завершены <span style="opacity:.7">${counts.done}</span></button><button class="fbtn ${lf==='cancelled'?'active':''}" onclick="lf='cancelled';rLeads()">❌ Отменены <span style="opacity:.7">${counts.cancelled}</span></button></div>`;if(!leads.length){h+='<div class="empty"><div class="icon">📭</div><div class="msg">Заявок нет</div></div>'}else{h+='<div class="tw"><table><thead><tr><th>#</th><th>Тип</th><th>Имя</th><th>Телефон</th><th>Сообщение</th><th>Дата</th><th>Статус</th><th></th></tr></thead><tbody>';for(const l of leads)h+=`<tr><td>${l.id}</td><td><span class="tb">${tl[l.type]||l.type}</span></td><td class="ln">${esc(l.name)}</td><td class="lp"><a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></td><td class="lm" title="${esc(l.message)}">${esc(l.message||'—')}</td><td class="ld">${fmtDate(l.created_at)}</td><td style="position:relative"><span class="st ${l.status}" onclick="showSM(event,${l.id},'${l.status}')">${sl[l.status]||l.status}</span></td><td><div class="acts"><button class="ab dng" onclick="delLead(${l.id})" title="Удалить">🗑</button></div></td></tr>`;h+='</tbody></table></div>'}document.getElementById('lc').innerHTML=h}catch{document.getElementById('lc').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+function showSM(e,id,cur){e.stopPropagation();closeSM();const sts=[{k:'new',l:'🆕 Новая'},{k:'contacted',l:'📞 Связались'},{k:'done',l:'✅ Завершена'},{k:'cancelled',l:'❌ Отменена'}];const dd=document.createElement('div');dd.className='sdd';dd.innerHTML=sts.map(s=>`<button class="opt" onclick="chSt(${id},'${s.k}')">${s.l}${s.k===cur?' ✓':''}</button>`).join('');const r=e.target.getBoundingClientRect();dd.style.top=(r.bottom+4)+'px';dd.style.left=r.left+'px';document.body.appendChild(dd);sdd=dd}
+function closeSM(){if(sdd){sdd.remove();sdd=null}}
+document.addEventListener('click',closeSM);
+async function chSt(id,st){closeSM();await api('PATCH','/leads/'+id,{status:st});toast('Статус обновлён');rLeads()}
+async function delLead(id){if(!confirm('Удалить заявку #'+id+'?'))return;await api('DELETE','/leads/'+id);toast('Удалена');rLeads()}
+
+// ── SCHEDULE ──
+async function rSched(){const mc=document.getElementById('mc');mc.innerHTML='<div class="sechead"><div class="pt">Расписание</div><button class="addb" onclick="schedModal()">+ Добавить поток</button></div><div id="schC">Загрузка...</div>';try{const rows=await api('GET','/schedule');if(!rows.length){document.getElementById('schC').innerHTML='<div class="empty"><div class="icon">📅</div><div class="msg">Расписание пустое</div></div>';return}let h='<div class="tw"><table><thead><tr><th>#</th><th>Курс</th><th>Даты</th><th>Время</th><th>Город</th><th>Места</th><th>Цена</th><th>🔥</th><th>Вид.</th><th></th></tr></thead><tbody>';for(const r of rows){const p=r.total_spots>0?Math.round(r.spots_left/r.total_spots*100):0;const c=p<=25?'var(--red)':p<=50?'var(--org)':'var(--grn)';h+=`<tr><td>${r.id}</td><td style="font-weight:600">${esc(r.course_name)}</td><td class="ld">${esc(r.start_date)} — ${esc(r.end_date)}</td><td class="ld">${esc(r.time_info)}</td><td>${esc(r.city)}</td><td><span style="color:${c};font-weight:600">${r.spots_left}</span>/${r.total_spots}</td><td>${esc(r.price)}</td><td><button class="ab" onclick="togHot(${r.id},${r.hot})">${r.hot?'🔥':'·'}</button></td><td><button class="vt ${r.visible?'on':'off'}" onclick="togVis('schedule',${r.id},${r.visible})"></button></td><td><div class="acts"><button class="ab" onclick="editSched(${r.id})">✏️</button><button class="ab dng" onclick="delItem('schedule',${r.id})">🗑</button></div></td></tr>`}h+='</tbody></table></div>';document.getElementById('schC').innerHTML=h}catch{document.getElementById('schC').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+async function togHot(id,c){await api('PATCH','/schedule/'+id,{hot:c?0:1});toast(c?'🔥 выкл':'🔥 вкл');rSched()}
+async function togVis(t,id,c){const ep=t==='model_days'?'model-days':t;await api('PATCH','/'+ep+'/'+id,{visible:c?0:1});toast(c?'Скрыто':'Показано');render()}
+async function delItem(t,id){if(!confirm('Удалить #'+id+'?'))return;const ep=t==='model_days'?'model-days':t;await api('DELETE','/'+ep+'/'+id);toast('Удалено');render()}
+function schedModal(d){d=d||{};openModal(`<div class="mh"><h3>${d.id?'Редактировать поток':'Новый поток'}</h3><button class="mc" onclick="closeModal()">×</button></div><div class="mb"><div class="f"><label>Название курса</label><input id="m_n" value="${esc(d.course_name||'')}"></div><div class="fr"><div class="f"><label>Дата начала</label><input id="m_s" value="${esc(d.start_date||'')}" placeholder="1 апреля 2026"></div><div class="f"><label>Дата окончания</label><input id="m_e" value="${esc(d.end_date||'')}"></div></div><div class="f"><label>Время</label><input id="m_t" value="${esc(d.time_info||'')}" placeholder="Пн–Пт, 10:00–16:00"></div><div class="fr"><div class="f"><label>Город</label><input id="m_ci" value="${esc(d.city||'Воронеж')}"></div><div class="f"><label>Формат</label><input id="m_fo" value="${esc(d.format||'Очно')}"></div></div><div class="fr"><div class="f"><label>Мест свободно</label><input type="number" id="m_sp" value="${d.spots_left||10}"></div><div class="f"><label>Всего мест</label><input type="number" id="m_to" value="${d.total_spots||10}"></div></div><div class="fr"><div class="f"><label>Цена</label><input id="m_pr" value="${esc(d.price||'')}" placeholder="45 000 ₽"></div><div class="f"><label>Цвет</label><input id="m_co" type="color" value="${d.color||'#D42B2B'}"></div></div></div><div class="mf"><button class="btnc" onclick="closeModal()">Отмена</button><button class="btns" onclick="saveSched(${d.id||'null'})">Сохранить</button></div>`)}
+async function editSched(id){const rows=await api('GET','/schedule');const i=rows.find(r=>r.id===id);if(i)schedModal(i)}
+async function saveSched(id){const b={course_name:document.getElementById('m_n').value,start_date:document.getElementById('m_s').value,end_date:document.getElementById('m_e').value,time_info:document.getElementById('m_t').value,city:document.getElementById('m_ci').value,format:document.getElementById('m_fo').value,spots_left:document.getElementById('m_sp').value,total_spots:document.getElementById('m_to').value,price:document.getElementById('m_pr').value,color:document.getElementById('m_co').value};if(id)await api('PATCH','/schedule/'+id,b);else await api('POST','/schedule',b);closeModal();toast('Сохранено');rSched()}
+
+// ── COURSES ──
+async function rCourses(){const mc=document.getElementById('mc');mc.innerHTML='<div class="sechead"><div class="pt">Курсы</div><button class="addb" onclick="courseModal()">+ Добавить курс</button></div><div id="crC">Загрузка...</div>';try{const rows=await api('GET','/courses');if(!rows.length){document.getElementById('crC').innerHTML='<div class="empty"><div class="icon">📚</div><div class="msg">Курсов нет</div></div>';return}let h='<div class="tw"><table><thead><tr><th>#</th><th>Курс</th><th>Уровень</th><th>Места</th><th>Цена</th><th>Старт</th><th>Вид.</th><th></th></tr></thead><tbody>';for(const r of rows){const p=r.total_spots>0?Math.round(r.spots/r.total_spots*100):0;const c=p<=25?'var(--red)':p<=50?'var(--org)':'var(--grn)';h+=`<tr><td>${r.id}</td><td><div style="font-weight:600">${esc(r.title)}</div><div style="font-size:11px;color:var(--t2)">${esc(r.subtitle)}</div></td><td><span class="tb">${esc(r.level)}</span></td><td><span style="color:${c};font-weight:600">${r.spots}</span>/${r.total_spots}</td><td>${esc(r.price)}</td><td class="ld">${esc(r.start_date)}</td><td><button class="vt ${r.visible?'on':'off'}" onclick="togVis('courses',${r.id},${r.visible})"></button></td><td><div class="acts"><button class="ab" onclick="editCourse(${r.id})">✏️</button><button class="ab dng" onclick="delItem('courses',${r.id})">🗑</button></div></td></tr>`}h+='</tbody></table></div>';document.getElementById('crC').innerHTML=h}catch{document.getElementById('crC').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+function courseModal(d){d=d||{};openModal(`<div class="mh"><h3>${d.id?'Редактировать курс':'Новый курс'}</h3><button class="mc" onclick="closeModal()">×</button></div><div class="mb"><div class="f"><label>Название</label><input id="m_ti" value="${esc(d.title||'')}"></div><div class="f"><label>Подзаголовок</label><input id="m_su" value="${esc(d.subtitle||'')}"></div><div class="fr"><div class="f"><label>Цена</label><input id="m_pr" value="${esc(d.price||'')}"></div><div class="f"><label>Старая цена</label><input id="m_op" value="${esc(d.old_price||'')}"></div></div><div class="fr"><div class="f"><label>Мест</label><input type="number" id="m_sp" value="${d.spots||10}"></div><div class="f"><label>Всего мест</label><input type="number" id="m_to" value="${d.total_spots||10}"></div></div><div class="fr"><div class="f"><label>Дата старта</label><input id="m_sd" value="${esc(d.start_date||'')}"></div><div class="f"><label>Цвет</label><input type="color" id="m_co" value="${d.color||'#D42B2B'}"></div></div><div class="fr"><div class="f"><label>Уровень</label><input id="m_lv" value="${esc(d.level||'')}" placeholder="С нуля"></div><div class="f"><label>Длительность</label><input id="m_du" value="${esc(d.duration||'')}" placeholder="4 недели"></div></div><div class="fr"><div class="f"><label>Категория</label><input id="m_ca" value="${esc(d.category||'')}"></div><div class="f"><label>Метка</label><input id="m_tg" value="${esc(d.tag||'')}" placeholder="Популярный"></div></div><div class="f"><label>Для кого</label><textarea id="m_fw">${esc(d.for_who||'')}</textarea></div><div class="f"><label>Доход после курса</label><input id="m_in" value="${esc(d.income||'')}"></div></div><div class="mf"><button class="btnc" onclick="closeModal()">Отмена</button><button class="btns" onclick="saveCourse(${d.id||'null'})">Сохранить</button></div>`)}
+async function editCourse(id){const rows=await api('GET','/courses');const i=rows.find(r=>r.id===id);if(i)courseModal(i)}
+async function saveCourse(id){const b={title:document.getElementById('m_ti').value,subtitle:document.getElementById('m_su').value,price:document.getElementById('m_pr').value,old_price:document.getElementById('m_op').value,spots:document.getElementById('m_sp').value,total_spots:document.getElementById('m_to').value,start_date:document.getElementById('m_sd').value,color:document.getElementById('m_co').value,level:document.getElementById('m_lv').value,duration:document.getElementById('m_du').value,category:document.getElementById('m_ca').value,tag:document.getElementById('m_tg').value,for_who:document.getElementById('m_fw').value,income:document.getElementById('m_in').value};if(id)await api('PATCH','/courses/'+id,b);else await api('POST','/courses',b);closeModal();toast('Сохранено');rCourses()}
+
+// ── MODELS ──
+async function rModels(){const mc=document.getElementById('mc');mc.innerHTML='<div class="sechead"><div class="pt">Дни для моделей</div><button class="addb" onclick="modelModal()">+ Добавить день</button></div><div id="mdC">Загрузка...</div>';try{const rows=await api('GET','/model-days');if(!rows.length){document.getElementById('mdC').innerHTML='<div class="empty"><div class="icon">💇</div><div class="msg">Нет дней для моделей</div></div>';return}let h='<div class="tw"><table><thead><tr><th>#</th><th>Дата</th><th>День</th><th>Время</th><th>Тема</th><th>Места</th><th>Вид.</th><th></th></tr></thead><tbody>';for(const r of rows)h+=`<tr><td>${r.id}</td><td style="font-weight:600">${esc(r.date)}</td><td>${esc(r.day)}</td><td>${esc(r.time)}</td><td>${esc(r.topic)}</td><td style="font-weight:600">${r.spots}</td><td><button class="vt ${r.visible?'on':'off'}" onclick="togVis('model_days',${r.id},${r.visible})"></button></td><td><div class="acts"><button class="ab" onclick="editModel(${r.id})">✏️</button><button class="ab dng" onclick="delItem('model_days',${r.id})">🗑</button></div></td></tr>`;h+='</tbody></table></div>';document.getElementById('mdC').innerHTML=h}catch{document.getElementById('mdC').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+function modelModal(d){d=d||{};openModal(`<div class="mh"><h3>${d.id?'Редактировать':'Новый день для моделей'}</h3><button class="mc" onclick="closeModal()">×</button></div><div class="mb"><div class="fr"><div class="f"><label>Дата</label><input id="m_dt" value="${esc(d.date||'')}" placeholder="15 апреля 2026"></div><div class="f"><label>День недели</label><input id="m_dy" value="${esc(d.day||'')}" placeholder="Четверг"></div></div><div class="fr"><div class="f"><label>Время</label><input id="m_tm" value="${esc(d.time||'10:00–17:00')}"></div><div class="f"><label>Мест</label><input type="number" id="m_sp" value="${d.spots||6}"></div></div><div class="f"><label>Тема занятия</label><input id="m_tp" value="${esc(d.topic||'')}"></div></div><div class="mf"><button class="btnc" onclick="closeModal()">Отмена</button><button class="btns" onclick="saveModel(${d.id||'null'})">Сохранить</button></div>`)}
+async function editModel(id){const rows=await api('GET','/model-days');const i=rows.find(r=>r.id===id);if(i)modelModal(i)}
+async function saveModel(id){const b={date:document.getElementById('m_dt').value,day:document.getElementById('m_dy').value,time:document.getElementById('m_tm').value,spots:document.getElementById('m_sp').value,topic:document.getElementById('m_tp').value};if(id)await api('PATCH','/model-days/'+id,b);else await api('POST','/model-days',b);closeModal();toast('Сохранено');rModels()}
+
+// ── PROMOS ──
+async function rPromos(){const mc=document.getElementById('mc');mc.innerHTML='<div class="sechead"><div class="pt">Акции</div><button class="addb" onclick="promoModal()">+ Добавить акцию</button></div><div id="prC">Загрузка...</div>';try{const rows=await api('GET','/promos');if(!rows.length){document.getElementById('prC').innerHTML='<div class="empty"><div class="icon">🎁</div><div class="msg">Акций нет</div></div>';return}const now=new Date().toISOString().split('T')[0];let h='<div class="tw"><table><thead><tr><th>#</th><th>Праздник</th><th>Скидка</th><th>Промокод</th><th>Период</th><th>Статус</th><th>Вид.</th><th></th></tr></thead><tbody>';for(const r of rows){let st='⏳';if(now>=r.start_date&&now<=r.end_date)st='<span style="color:var(--grn)">🟢 Активна</span>';else if(now>r.end_date)st='<span style="color:var(--t2)">⬜ Завершена</span>';else st='<span style="color:var(--blu)">🔜 Ожидает</span>';h+=`<tr><td>${r.id}</td><td style="font-weight:600">${r.icon} ${esc(r.holiday)}</td><td style="color:var(--red);font-weight:600">${esc(r.discount)}</td><td><code style="background:var(--s2);padding:2px 8px;border-radius:4px;font-size:12px">${esc(r.promo_code)}</code></td><td class="ld">${esc(r.start_date)} — ${esc(r.end_date)}</td><td>${st}</td><td><button class="vt ${r.visible?'on':'off'}" onclick="togVis('promos',${r.id},${r.visible})"></button></td><td><div class="acts"><button class="ab" onclick="editPromo(${r.id})">✏️</button><button class="ab dng" onclick="delItem('promos',${r.id})">🗑</button></div></td></tr>`}h+='</tbody></table></div>';document.getElementById('prC').innerHTML=h}catch{document.getElementById('prC').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+function promoModal(d){d=d||{};openModal(`<div class="mh"><h3>${d.id?'Редактировать акцию':'Новая акция'}</h3><button class="mc" onclick="closeModal()">×</button></div><div class="mb"><div class="fr"><div class="f"><label>Праздник</label><input id="m_ho" value="${esc(d.holiday||'')}" placeholder="8 МАРТА"></div><div class="f"><label>Иконка</label><input id="m_ic" value="${esc(d.icon||'🎁')}" style="font-size:20px"></div></div><div class="f"><label>Название</label><input id="m_ti" value="${esc(d.title||'')}"></div><div class="f"><label>Подзаголовок</label><input id="m_su" value="${esc(d.subtitle||'')}"></div><div class="fr"><div class="f"><label>Скидка</label><input id="m_di" value="${esc(d.discount||'')}" placeholder="-20%"></div><div class="f"><label>Промокод</label><input id="m_pc" value="${esc(d.promo_code||'')}"></div></div><div class="f"><label>Описание</label><textarea id="m_de">${esc(d.description||'')}</textarea></div><div class="fr"><div class="f"><label>Дата начала (YYYY-MM-DD)</label><input id="m_sd" value="${esc(d.start_date||'')}" placeholder="2026-03-01"></div><div class="f"><label>Дата окончания</label><input id="m_ed" value="${esc(d.end_date||'')}" placeholder="2026-03-10"></div></div><div class="f"><label>Цвет</label><input type="color" id="m_co" value="${d.color||'#D42B2B'}"></div></div><div class="mf"><button class="btnc" onclick="closeModal()">Отмена</button><button class="btns" onclick="savePromo(${d.id||'null'})">Сохранить</button></div>`)}
+async function editPromo(id){const rows=await api('GET','/promos');const i=rows.find(r=>r.id===id);if(i)promoModal(i)}
+async function savePromo(id){const b={holiday:document.getElementById('m_ho').value,icon:document.getElementById('m_ic').value,title:document.getElementById('m_ti').value,subtitle:document.getElementById('m_su').value,discount:document.getElementById('m_di').value,promo_code:document.getElementById('m_pc').value,description:document.getElementById('m_de').value,start_date:document.getElementById('m_sd').value,end_date:document.getElementById('m_ed').value,color:document.getElementById('m_co').value};if(id)await api('PATCH','/promos/'+id,b);else await api('POST','/promos',b);closeModal();toast('Сохранено');rPromos()}
+
+// ── SETTINGS ──
+async function rSettings(){const mc=document.getElementById('mc');mc.innerHTML='<div class="pt">Настройки</div><div id="stC">Загрузка...</div>';try{const s=await api('GET','/settings');const fs=[{k:'phone',l:'Телефон'},{k:'email',l:'Email'},{k:'address',l:'Адрес'},{k:'work_hours',l:'Часы работы'},{k:'whatsapp_phone',l:'WhatsApp (без +)'},{k:'telegram_channel',l:'Telegram канал'}];let h='<div class="setc">';for(const f of fs)h+=`<div class="f"><label>${f.l}</label><input id="set_${f.k}" value="${esc(s[f.k]||'')}"></div>`;h+='<button class="btns" style="margin-top:8px" onclick="saveSets()">Сохранить настройки</button></div>';document.getElementById('stC').innerHTML=h}catch{document.getElementById('stC').innerHTML='<div class="empty"><div class="icon">⚠️</div><div class="msg">Ошибка</div></div>'}}
+async function saveSets(){const ks=['phone','email','address','work_hours','whatsapp_phone','telegram_channel'];const b={};for(const k of ks)b[k]=document.getElementById('set_'+k).value;await api('PATCH','/settings',b);toast('Настройки сохранены')}
+
+init();
+</script>
+</body>
+</html>

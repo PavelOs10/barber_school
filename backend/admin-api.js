@@ -262,6 +262,43 @@ router.patch('/settings', authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Blog CRUD ───────────────────────────────────────────
+router.get('/blog', authMiddleware, (req, res) => {
+  const rows = db.prepare('SELECT * FROM blog_posts ORDER BY created_at DESC').all();
+  res.json(rows);
+});
+
+router.post('/blog', authMiddleware, (req, res) => {
+  const { title, excerpt, content, category, img, read_time, hot } = req.body;
+  if (!title) return res.status(400).json({ error: 'Заголовок обязателен' });
+  const result = db.prepare(
+    'INSERT INTO blog_posts (title, excerpt, content, category, img, read_time, hot) VALUES (?,?,?,?,?,?,?)'
+  ).run(title, excerpt||'', content||'', category||'', img||'', read_time||'5 мин', hot ? 1 : 0);
+  res.json({ ok: true, id: result.lastInsertRowid });
+});
+
+router.patch('/blog/:id', authMiddleware, (req, res) => {
+  const { id } = req.params;
+  const allowed = ['title','excerpt','content','category','img','read_time','hot','visible'];
+  const updates = [];
+  const values = [];
+  for (const [key, val] of Object.entries(req.body)) {
+    if (allowed.includes(key)) {
+      updates.push(`${key} = ?`);
+      values.push(['hot','visible'].includes(key) ? parseInt(val) : val);
+    }
+  }
+  if (!updates.length) return res.status(400).json({ error: 'Нечего обновлять' });
+  values.push(parseInt(id));
+  db.prepare(`UPDATE blog_posts SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+  res.json({ ok: true });
+});
+
+router.delete('/blog/:id', authMiddleware, (req, res) => {
+  db.prepare('DELETE FROM blog_posts WHERE id = ?').run(parseInt(req.params.id));
+  res.json({ ok: true });
+});
+
 // ── Stats (dashboard) ───────────────────────────────────
 router.get('/stats', authMiddleware, (req, res) => {
   const leadsToday = db.prepare("SELECT COUNT(*) as c FROM leads WHERE date(created_at) = date('now')").get().c;
@@ -270,8 +307,9 @@ router.get('/stats', authMiddleware, (req, res) => {
   const leadsTotal = db.prepare("SELECT COUNT(*) as c FROM leads").get().c;
   const coursesActive = db.prepare("SELECT COUNT(*) as c FROM courses WHERE visible = 1").get().c;
   const scheduleActive = db.prepare("SELECT COUNT(*) as c FROM schedule WHERE visible = 1").get().c;
+  const blogPosts = db.prepare("SELECT COUNT(*) as c FROM blog_posts WHERE visible = 1").get().c;
 
-  res.json({ leadsToday, leadsWeek, leadsNew, leadsTotal, coursesActive, scheduleActive });
+  res.json({ leadsToday, leadsWeek, leadsNew, leadsTotal, coursesActive, scheduleActive, blogPosts });
 });
 
 export default router;

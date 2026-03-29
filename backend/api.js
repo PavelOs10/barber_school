@@ -49,6 +49,12 @@ app.get('/api/settings', (req, res) => {
   res.json(obj);
 });
 
+// Blog posts (public)
+app.get('/api/blog', (req, res) => {
+  const rows = db.prepare('SELECT * FROM blog_posts WHERE visible = 1 ORDER BY created_at DESC').all();
+  res.json(rows);
+});
+
 // ── Lead submission ─────────────────────────────────────
 
 app.post('/api/lead', async (req, res) => {

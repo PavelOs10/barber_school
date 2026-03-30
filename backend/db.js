@@ -74,6 +74,7 @@ db.exec(`
     end_date    TEXT NOT NULL,
     promo_code  TEXT DEFAULT '',
     color       TEXT DEFAULT '#D42B2B',
+    bg_image    TEXT DEFAULT '',
     perks       TEXT DEFAULT '[]',
     visible     INTEGER DEFAULT 1,
     created_at  TEXT DEFAULT (datetime('now'))
@@ -107,7 +108,39 @@ db.exec(`
     visible    INTEGER DEFAULT 1,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS teachers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    role        TEXT DEFAULT '',
+    experience  TEXT DEFAULT '',
+    description TEXT DEFAULT '',
+    photo       TEXT DEFAULT '',
+    sort_order  INTEGER DEFAULT 0,
+    visible     INTEGER DEFAULT 1,
+    created_at  TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS graduates (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    course      TEXT DEFAULT '',
+    year        TEXT DEFAULT '',
+    quote       TEXT DEFAULT '',
+    workplace   TEXT DEFAULT '',
+    photo       TEXT DEFAULT '',
+    sort_order  INTEGER DEFAULT 0,
+    visible     INTEGER DEFAULT 1,
+    created_at  TEXT DEFAULT (datetime('now'))
+  );
 `);
+
+// ── Migration: add bg_image to promos if missing ────────
+try {
+  db.exec(`ALTER TABLE promos ADD COLUMN bg_image TEXT DEFAULT ''`);
+} catch (e) {
+  // Column already exists — ignore
+}
 
 // ── Seed defaults if empty ──────────────────────────────
 

@@ -1,11 +1,11 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, TargetAndTransition } from 'framer-motion';
 import { ReactNode, useState, ImgHTMLAttributes } from 'react';
 
 // ── Animated section (scroll-triggered fade-in) ──
 export function AnimatedSection({ children, className, delay = 0, direction = 'up' }: {
   children: ReactNode; className?: string; delay?: number; direction?: 'up' | 'left' | 'right' | 'scale';
 }) {
-  const variants: Record<string, { initial: object; whileInView: object }> = {
+  const variants: Record<string, { initial: TargetAndTransition; whileInView: TargetAndTransition }> = {
     up:    { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0 } },
     left:  { initial: { opacity: 0, x: -40 }, whileInView: { opacity: 1, x: 0 } },
     right: { initial: { opacity: 0, x: 40 }, whileInView: { opacity: 1, x: 0 } },

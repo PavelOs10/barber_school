@@ -78,7 +78,7 @@ server {
     }
 
     # Uploaded images
-    location /uploads/ {
+    location ^~ /uploads/ {
         alias /var/www/barber/uploads/;
         expires 30d;
         add_header Cache-Control "public, immutable";
@@ -86,7 +86,7 @@ server {
     }
 
     # Admin panel
-    location /admin/ {
+    location ^~ /admin/ {
         alias /var/www/barber/admin/;
         index index.html;
         try_files \$uri \$uri/ /admin/index.html;

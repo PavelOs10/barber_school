@@ -163,7 +163,7 @@ function ubadge(c){const b=document.getElementById('nlb');if(c>0){b.style.displa
 function imgUploadHTML(id, currentUrl, context, hint) {
   const hasImg = currentUrl ? true : false;
   return `<div class="img-upload ${hasImg?'has-img':''}" id="${id}_wrap" onclick="document.getElementById('${id}_file').click()">
-    ${hasImg ? `<img src="${esc(currentUrl)}" id="${id}_preview"><button class="remove-btn" onclick="event.stopPropagation();removeImg('${id}')" title="Удалить">×</button>` : `<div class="placeholder" id="${id}_placeholder"><span>📷</span>Нажмите для загрузки</div>`}
+    ${hasImg ? `<img src="${esc(currentUrl)}" id="${id}_preview"><button class="remove-btn" onclick="event.stopPropagation();removeImg('${id}','${context}')" title="Удалить">×</button>` : `<div class="placeholder" id="${id}_placeholder"><span>📷</span>Нажмите для загрузки</div>`}
     <input type="file" id="${id}_file" accept="image/jpeg,image/png,image/webp" onchange="handleImgUpload('${id}','${context}',this)">
     <input type="hidden" id="${id}" value="${esc(currentUrl||'')}">
   </div>
@@ -202,7 +202,7 @@ async function handleImgUpload(id, context, input) {
     
     // Update preview
     wrapEl.classList.add('has-img');
-    wrapEl.innerHTML = `<img src="${resp.url}" id="${id}_preview"><button class="remove-btn" onclick="event.stopPropagation();removeImg('${id}')" title="Удалить">×</button><input type="file" id="${id}_file" accept="image/jpeg,image/png,image/webp" onchange="handleImgUpload('${id}','${context}',this)"><input type="hidden" id="${id}" value="${resp.url}">`;
+    wrapEl.innerHTML = `<img src="${resp.url}" id="${id}_preview"><button class="remove-btn" onclick="event.stopPropagation();removeImg('${id}','${context}')" title="Удалить">×</button><input type="file" id="${id}_file" accept="image/jpeg,image/png,image/webp" onchange="handleImgUpload('${id}','${context}',this)"><input type="hidden" id="${id}" value="${resp.url}">`;
     
     toast('Изображение загружено');
   } catch (err) {
@@ -211,11 +211,11 @@ async function handleImgUpload(id, context, input) {
   loadingEl.style.display = 'none';
 }
 
-function removeImg(id) {
+function removeImg(id, context) {
   const wrapEl = document.getElementById(id + '_wrap');
   document.getElementById(id).value = '';
   wrapEl.classList.remove('has-img');
-  wrapEl.innerHTML = `<div class="placeholder" id="${id}_placeholder"><span>📷</span>Нажмите для загрузки</div><input type="file" id="${id}_file" accept="image/jpeg,image/png,image/webp" onchange="handleImgUpload('${id}','blog',this)"><input type="hidden" id="${id}" value="">`;
+  wrapEl.innerHTML = `<div class="placeholder" id="${id}_placeholder"><span>📷</span>Нажмите для загрузки</div><input type="file" id="${id}_file" accept="image/jpeg,image/png,image/webp" onchange="handleImgUpload('${id}','${context}',this)"><input type="hidden" id="${id}" value="">`;
 }
 
 // ── DASHBOARD ──

@@ -26,6 +26,9 @@ certbot certonly \
   -d "$DOMAIN" \
   -d "www.${DOMAIN}"
 
+# Создаём директории если нет
+mkdir -p /var/www/barber/uploads /var/www/barber/admin
+
 # Обновляем nginx на SSL версию
 cat > /etc/nginx/sites-available/barber << NGINXEOF
 server {
@@ -45,15 +48,20 @@ server {
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
     ssl_prefer_server_ciphers off;
     ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
     add_header Strict-Transport-Security "max-age=63072000" always;
 
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
     gzip_min_length 256;
 
+    client_max_body_size 10m;
+
     root /var/www/barber/dist;
     index index.html;
 
+    # API proxy
     location /api/ {
         proxy_pass http://127.0.0.1:3100;
         proxy_http_version 1.1;
@@ -61,10 +69,29 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 30s;
+        client_max_body_size 10m;
     }
 
+    # Uploaded images
+    location /uploads/ {
+        alias /var/www/barber/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff";
+    }
+
+    # Admin panel
+    location /admin/ {
+        alias /var/www/barber/admin/;
+        index index.html;
+        try_files \$uri \$uri/ /admin/index.html;
+    }
+
+    # SPA fallback
     location / { try_files \$uri \$uri/ /index.html; }
 
+    # Static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
@@ -92,4 +119,5 @@ nginx -t && systemctl reload nginx
 echo ""
 echo "✅ SSL установлен!"
 echo "🌐 https://${DOMAIN}"
+echo "🔧 Админка: https://${DOMAIN}/admin/"
 echo "📊 CRM: http://${SERVER_IP}"

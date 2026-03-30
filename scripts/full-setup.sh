@@ -60,14 +60,14 @@ echo ""
 echo "📦 [3/8] Установка nginx + certbot..."
 apt-get update -qq
 apt-get install -y -qq nginx certbot python3-certbot-nginx
-mkdir -p /var/www/certbot /var/www/barber/dist
+mkdir -p /var/www/certbot /var/www/barber/dist /var/www/barber/uploads /var/www/barber/admin
 
 # ── 4. Временный nginx конфиг (HTTP only, для certbot) ──
 echo ""
 echo "⚙️  [4/8] Настройка nginx (временный HTTP)..."
 
 cat > /etc/nginx/sites-available/barber << NGINXEOF
-# Новый сайт школы барберинга
+# Временный конфиг для получения SSL
 server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
@@ -180,15 +180,19 @@ server {
     ssl_prefer_server_ciphers off;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 1d;
+    ssl_session_tickets off;
     add_header Strict-Transport-Security "max-age=63072000" always;
 
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
     gzip_min_length 256;
 
+    client_max_body_size 10m;
+
     root /var/www/barber/dist;
     index index.html;
 
+    # API proxy
     location /api/ {
         proxy_pass http://127.0.0.1:3100;
         proxy_http_version 1.1;
@@ -197,10 +201,28 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 30s;
+        client_max_body_size 10m;
     }
 
+    # Uploaded images
+    location /uploads/ {
+        alias /var/www/barber/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff";
+    }
+
+    # Admin panel
+    location /admin/ {
+        alias /var/www/barber/admin/;
+        index index.html;
+        try_files \$uri \$uri/ /admin/index.html;
+    }
+
+    # SPA fallback
     location / { try_files \$uri \$uri/ /index.html; }
 
+    # Static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
@@ -211,9 +233,7 @@ server {
 server {
     listen 80 default_server;
     server_name ${SERVER_IP} _;
-
     location /.well-known/acme-challenge/ { root /var/www/certbot; allow all; }
-
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
@@ -233,8 +253,9 @@ cat > /etc/nginx/sites-available/barber << NGINXEOF
 server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
-
     location /.well-known/acme-challenge/ { root /var/www/certbot; allow all; }
+
+    client_max_body_size 10m;
 
     root /var/www/barber/dist;
     index index.html;
@@ -245,6 +266,20 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        client_max_body_size 10m;
+    }
+
+    location /uploads/ {
+        alias /var/www/barber/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff";
+    }
+
+    location /admin/ {
+        alias /var/www/barber/admin/;
+        index index.html;
+        try_files \$uri \$uri/ /admin/index.html;
     }
 
     location / { try_files \$uri \$uri/ /index.html; }
@@ -253,7 +288,6 @@ server {
 server {
     listen 80 default_server;
     server_name ${SERVER_IP} _;
-
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
@@ -280,15 +314,19 @@ rm -rf /var/www/barber/dist/*
 cp -r dist/* /var/www/barber/dist/
 echo "   ✅ Фронтенд собран → /var/www/barber/dist/"
 
+# Копируем админку
+rm -rf /var/www/barber/admin/*
+cp -r "${PROJECT_DIR}/admin/"* /var/www/barber/admin/
+echo "   ✅ Админка → /var/www/barber/admin/"
+
 # ── 8. Запуск бэкенда ──────────────────────────────────
 echo ""
-echo "🤖 [8/8] Запуск бэкенда + Telegram-бот..."
+echo "🤖 [8/8] Запуск бэкенда..."
 cd "${PROJECT_DIR}/backend"
 
 if [ ! -f .env ]; then
   echo "   ❌ Файл .env не найден!"
   echo "   Скопируйте: cp .env.example .env && nano .env"
-  echo "   Заполните BOT_TOKEN и ADMIN_CHAT_ID"
   exit 1
 fi
 
@@ -296,7 +334,7 @@ npm install 2>&1 | tail -3
 
 cat > /etc/systemd/system/barber-api.service << EOF
 [Unit]
-Description=Barber House API + Telegram Bot
+Description=Barber House API
 After=network.target
 
 [Service]
@@ -318,12 +356,15 @@ systemctl restart barber-api
 
 sleep 3
 if systemctl is-active --quiet barber-api; then
-  echo "   ✅ API + Telegram-бот запущен"
+  echo "   ✅ API запущен"
 else
-  echo "   ⚠️  Проверьте логи: journalctl -u barber-api -n 30"
+  echo "   ⚠️  Проверьте: journalctl -u barber-api -n 30"
 fi
 
-# ── Проверка API ────────────────────────────────────────
+# ── Права на файлы ─────────────────────────────────────
+chmod -R 755 /var/www/barber/
+
+# ── Проверка API ───────────────────────────────────────
 HEALTH=$(curl -s http://127.0.0.1:3100/api/health 2>/dev/null || echo "FAIL")
 if echo "$HEALTH" | grep -q "ok"; then
   echo "   ✅ API отвечает: $HEALTH"
@@ -338,17 +379,17 @@ echo "  ✅ УСТАНОВКА ЗАВЕРШЕНА!"
 echo "═══════════════════════════════════════════════════════"
 echo ""
 if [ "${SKIP_SSL:-0}" != "1" ]; then
-  echo "  🌐 Сайт:  https://${DOMAIN}"
+  echo "  🌐 Сайт:    https://${DOMAIN}"
 else
-  echo "  🌐 Сайт:  http://${DOMAIN} (без SSL пока)"
-  echo "  🔐 SSL:   запустите finish-ssl.sh когда DNS обновится"
+  echo "  🌐 Сайт:    http://${DOMAIN} (без SSL)"
+  echo "  🔐 SSL:     запустите finish-ssl.sh когда DNS обновится"
 fi
-echo "  📊 CRM:   http://${SERVER_IP} (как раньше)"
-echo "  🤖 Бот:   отправьте /start в Telegram"
+echo "  🔧 Админка:  https://${DOMAIN}/admin/"
+echo "  📊 CRM:      http://${SERVER_IP}"
+echo "  📂 Uploads:  /var/www/barber/uploads/"
 echo ""
 echo "  📋 Полезные команды:"
-echo "  journalctl -u barber-api -f     — логи бэкенда"
+echo "  journalctl -u barber-api -f     — логи"
 echo "  systemctl restart barber-api    — перезапуск"
-echo "  systemctl status barber-api     — статус"
-echo "  nginx -t && systemctl reload nginx — перезагрузка nginx"
+echo "  nginx -t && systemctl reload nginx"
 echo ""

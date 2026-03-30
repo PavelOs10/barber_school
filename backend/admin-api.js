@@ -10,7 +10,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
 
 // ── Upload directory ───────────────────────────────────
-const UPLOAD_DIR = process.env.UPLOAD_DIR || join(__dirname, '..', 'uploads');
+// In production defaults to /var/www/barber/uploads (same path nginx serves)
+const DEFAULT_UPLOAD_DIR = process.env.NODE_ENV === 'production'
+  ? '/var/www/barber/uploads'
+  : join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || DEFAULT_UPLOAD_DIR;
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 
 // ── Auth helpers ────────────────────────────────────────

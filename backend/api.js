@@ -10,8 +10,14 @@ import { notifyLead } from './bot.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-// ── Upload directory (ensure it exists) ─────────────────
-const UPLOAD_DIR = process.env.UPLOAD_DIR || join(__dirname, '..', 'uploads');
+// ── Upload directory ──────────────────────────────────
+// In production (NODE_ENV=production) defaults to /var/www/barber/uploads
+// which nginx also serves via location /uploads/
+// In development falls back to ../uploads relative to backend/
+const DEFAULT_UPLOAD_DIR = process.env.NODE_ENV === 'production'
+  ? '/var/www/barber/uploads'
+  : join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || DEFAULT_UPLOAD_DIR;
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 
 app.use(cors({ origin: process.env.SITE_URL || '*' }));
@@ -19,7 +25,7 @@ app.use(cors({ origin: process.env.SITE_URL || '*' }));
 // Increase body limit for base64 image uploads (10 MB)
 app.use(express.json({ limit: '10mb' }));
 
-// Serve uploaded images statically
+// Serve uploaded images statically (fallback if nginx doesn't handle it)
 app.use('/uploads', express.static(UPLOAD_DIR, {
   maxAge: '30d',
   immutable: true,

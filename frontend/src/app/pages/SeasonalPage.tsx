@@ -108,11 +108,27 @@ export function SeasonalPage() {
 function PromoCard({ promo: p, status, waPhone, compact }: { promo: any; status: string; waPhone: string; compact?: boolean }) {
   const isEnded = status === 'ended';
   const days = daysUntil(p.start_date);
+  const hasBg = !!p.bg_image && !isEnded;
   return (
     <motion.div whileHover={isEnded ? {} : { y: -4 }}
-      style={{ background: '#FFF', border: `1px solid ${status === 'active' ? (p.color || RED) + '50' : '#EBEBEB'}`, borderRadius: '16px', overflow: 'hidden', height: '100%', opacity: isEnded ? 0.5 : 1 }}>
-      <div style={{ height: '4px', background: isEnded ? '#E8E6E3' : p.color || RED }} />
-      <div style={{ padding: compact ? '20px' : '28px' }}>
+      style={{ background: '#FFF', border: `1px solid ${status === 'active' ? (p.color || RED) + '50' : '#EBEBEB'}`, borderRadius: '16px', overflow: 'hidden', height: '100%', opacity: isEnded ? 0.5 : 1, position: 'relative' }}>
+      {/* Background image */}
+      {hasBg && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url(${p.bg_image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          zIndex: 0,
+        }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.78) 50%, rgba(255,255,255,0.65) 100%)',
+          }} />
+        </div>
+      )}
+      <div style={{ height: '4px', background: isEnded ? '#E8E6E3' : p.color || RED, position: 'relative', zIndex: 1 }} />
+      <div style={{ padding: compact ? '20px' : '28px', position: 'relative', zIndex: 1 }}>
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -126,7 +142,7 @@ function PromoCard({ promo: p, status, waPhone, compact }: { promo: any; status:
           </div>
           <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: compact ? '36px' : '48px', color: isEnded ? '#CCC' : p.color || RED, lineHeight: 1 }}>{p.discount}</div>
         </div>
-        <p style={{ color: isEnded ? '#BBB' : '#777', fontSize: '14px', lineHeight: 1.6, marginBottom: '16px' }}>{p.description}</p>
+        <p style={{ color: isEnded ? '#BBB' : hasBg ? '#444' : '#777', fontSize: '14px', lineHeight: 1.6, marginBottom: '16px' }}>{p.description}</p>
         {!compact && !isEnded && (p.perks || []).length > 0 && (
           <div className="flex flex-col gap-2 mb-4">
             {p.perks.map((pk: string) => <div key={pk} className="flex items-center gap-2"><Check size={14} color={p.color || RED} /><span style={{ color: '#666', fontSize: '13px' }}>{pk}</span></div>)}

@@ -296,11 +296,24 @@ export function HomePage() {
                         Все акции <ArrowRight size={14} />
                       </Link>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px', background: '#FFF8F8' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '64px', marginBottom: '8px' }}>{activePromo.icon || '🔥'}</div>
-                        <div style={{ color: RED, fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>{activePromo.holiday || 'АКЦИЯ'}</div>
-                      </div>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: activePromo.bg_image ? '0' : '32px',
+                      background: activePromo.bg_image ? 'transparent' : '#FFF8F8',
+                      position: 'relative', overflow: 'hidden', minHeight: '200px',
+                    }}>
+                      {activePromo.bg_image ? (
+                        <img
+                          src={activePromo.bg_image}
+                          alt={activePromo.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '64px', marginBottom: '8px' }}>{activePromo.icon || '🔥'}</div>
+                          <div style={{ color: RED, fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>{activePromo.holiday || 'АКЦИЯ'}</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
